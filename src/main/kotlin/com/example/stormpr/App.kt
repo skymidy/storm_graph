@@ -15,8 +15,6 @@ class App : Application() {
         stage.minWidth = 900.0
         stage.minHeight = 600.0
 
-
-
         stage.show()
     }
 
