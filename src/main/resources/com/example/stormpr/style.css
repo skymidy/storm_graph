@@ -1,0 +1,23 @@
+.menu-bar{
+    -fx-background-color: #294a7a;
+}
+.menu-button {
+    -fx-background-color: rgba(0,0,0,0.2);
+    -fx-text-fill: white;
+}
+.menu-button:pressed{
+    -fx-background-color: rgba(0,0,0,0.4);
+}
+
+.node-canvas {
+    -fx-background-color: black;
+}
+.node-graph {
+    -fx-background-color: white;
+}
+.node-graph-header {
+    -fx-background-color: #294a7a;
+}
+
+.root {
+}
