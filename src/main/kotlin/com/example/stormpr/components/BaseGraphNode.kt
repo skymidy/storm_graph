@@ -32,7 +32,7 @@ class BaseGraphNode(nodeName: String) : VBox() {
         //header setup
         nodeLabel = Label()
         nodeLabel.font = Font.font("System", FontWeight.NORMAL, 14.0)
-        nodeLabel.textFill =  Paint.valueOf("#FFF")
+        nodeLabel.textFill = Paint.valueOf("#FFF")
         nodeLabel.text = nodeName
 
         nodeHeader = VBox()
@@ -81,8 +81,14 @@ class BaseGraphNode(nodeName: String) : VBox() {
         nodeHeader.addEventFilter(MouseEvent.MOUSE_DRAGGED) { mouseEvent ->
             // shift node from its initial position by delta
             // calculated from mouse cursor movement
-            translateX = (dragContext.initialTranslateX + mouseEvent.sceneX - dragContext.mouseAnchorX)
-            translateY = (dragContext.initialTranslateY + mouseEvent.sceneY - dragContext.mouseAnchorY)
+            val newTranslateX = (dragContext.initialTranslateX + mouseEvent.sceneX - dragContext.mouseAnchorX)
+            val newTranslateY = (dragContext.initialTranslateY + mouseEvent.sceneY - dragContext.mouseAnchorY)
+            if (newTranslateX >= 0) {
+                translateX = newTranslateX
+            }
+            if (newTranslateY >= 0) {
+                translateY = newTranslateY
+            }
         }
     }
 
