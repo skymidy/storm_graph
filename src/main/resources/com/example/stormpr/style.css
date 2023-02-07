@@ -18,6 +18,16 @@
 .node-graph-header {
     -fx-background-color: #294a7a;
 }
-
+.node-image-view{
+    -fx-background-color: black;
+}
+.node-button {
+    -fx-background-color: rgba(0,0,0,0.2);
+    -fx-text-fill: white;
+    -fx-cursor: pointer;
+}
+.node-button:pressed{
+    -fx-background-color: rgba(0,0,0,0.4);
+}
 .root {
 }

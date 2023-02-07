@@ -1,40 +1,37 @@
 package com.example.stormpr.components
 
 import com.example.stormpr.util.localToScenePoint
+import javafx.beans.property.Property
+import javafx.beans.value.ObservableValue
 import javafx.geometry.Point2D
 import javafx.geometry.Pos
 import javafx.scene.Group
 import javafx.scene.Node
-import javafx.scene.control.CheckBox
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseDragEvent
 import javafx.scene.input.MouseEvent
-import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Line
+import javafx.scene.shape.Polygon
 
 
-class BaseProp<IN, OUT>(
-    private val hasIn: Boolean, private val hasOut: Boolean, parentNode: BaseGraphNode, action: (IN) -> OUT
-) : HBox() {
+abstract class BaseProp<TYPE>(
+    val hasIn: Boolean, val hasOut: Boolean, parentNode: BaseGraphNode) : HBox() {
 
-    val IN_DOT_ID = "in_dot_prop"
-    val OUT_DOT_ID = "out_dot_prop"
+    protected abstract val type: types
 
-
-    protected var content: OUT? = null
-    private var predicate: (IN) -> OUT = action
+    protected abstract val value: Property<TYPE>
 
     private var parent: BaseGraphNode = parentNode
 
     private var inputLine: PropLine? = null
     private var outputLines: MutableList<PropLine> = mutableListOf()
 
-    private var inDot: Circle = Circle()
-    private var outDot: Circle = Circle()
+    protected var inDot: Circle = Circle()
+    protected var outDot: Polygon = Polygon()
 
     protected val body = HBox()
 
@@ -52,22 +49,27 @@ class BaseProp<IN, OUT>(
         styleClass.setAll("node-prop")
 
         //dots setup
-
         inDot.radius = 6.0
         inDot.fill = Paint.valueOf("blue")
         inDot.stroke = Color.BLACK
         inDot.strokeWidth = 2.0
         inDot.translateX -= 8.0
-        inDot.id = IN_DOT_ID
+        inDot.id = "in_dot_prop"
         if (!hasIn) inDot.isVisible = false
         else initInput()
 
-        outDot.radius = 6.0
+        outDot.points.addAll(
+            *arrayOf(
+                0.0, -7.0,
+                14.0, 0.0,
+                0.0, 7.0
+            )
+        )
         outDot.fill = Paint.valueOf("blue")
         outDot.stroke = Color.BLACK
         outDot.strokeWidth = 2.0
-        outDot.translateX += 8.0
-        outDot.id = OUT_DOT_ID
+        outDot.translateX += 13.0
+        outDot.id = "out_dot_prop"
         if (!hasOut) outDot.isVisible = false
         else initOutput()
 
@@ -81,9 +83,15 @@ class BaseProp<IN, OUT>(
         body.maxHeight = USE_COMPUTED_SIZE
 
         body.alignment = Pos.CENTER_LEFT
-        body.children.add(CheckBox("hello"))
 
         children.addAll(inDot, body, outDot)
+    }
+
+    fun getValue(): TYPE{
+        return value.value
+    }
+    fun getValueProperty(): Property<TYPE>{
+        return value
     }
 
     fun updateLines() {
@@ -110,7 +118,6 @@ class BaseProp<IN, OUT>(
 
             //setup of companion
             grabbedProp = this
-            grabbedPropParent = parent
             activeDot = node
             //creating line adding to group on canvas
             activeLine = PropLine()
@@ -158,7 +165,7 @@ class BaseProp<IN, OUT>(
             //Preventing all events that not on left mouse button
             if (mouseEvent.button != MouseButton.PRIMARY) return@addEventFilter
 
-            if(activeDot?.id == node.id) return@addEventFilter
+            if(activeDot?.id == node.id || grabbedProp?.type != type) return@addEventFilter
 
             //Dragged line over target
             targetProp = this
@@ -203,6 +210,7 @@ class BaseProp<IN, OUT>(
             activeLine?.updateStartPoint()
             activeLine?.updateEndPoint()
             activeLine?.initEventHandler()
+            value.bind(targetProp?.value as ObservableValue<out Nothing>)
             inputLine = activeLine
             targetProp?.outputLines?.add(activeLine!!)
 
@@ -223,7 +231,11 @@ class BaseProp<IN, OUT>(
 
 
             //abort connection if line was released midair or targeting itself
-            if (targetProp == null || targetPropParent == parent || !(targetProp?.hasIn)!!) {
+            if (targetProp == null
+                || targetPropParent == parent
+                || !(targetProp?.hasIn)!!
+//                || ( targetProp!!.value.value?.javaClass != (value.value as Any).javaClass )
+            ) {
                 activeLine?.removeSelf()
                 activeLine = null
                 return@addEventFilter
@@ -237,6 +249,7 @@ class BaseProp<IN, OUT>(
             activeLine?.inProp = this
             activeLine?.updateEndPoint()
             activeLine?.initEventHandler()
+            targetProp?.value?.bind(value as ObservableValue<out Nothing>)
             targetProp?.inputLine = activeLine
             outputLines.add(activeLine!!)
 
@@ -253,11 +266,13 @@ class BaseProp<IN, OUT>(
 
     private fun abortIn() {
         inputLine = null
+        println( value.isBound)
+        value.unbind()
     }
 
     private class PropLine() : Line() {
-        lateinit var outProp: BaseProp<*, *>
-        lateinit var inProp: BaseProp<*, *>
+        lateinit var outProp: BaseProp<*>
+        lateinit var inProp: BaseProp<*>
 
         init {
             stroke = Color.DODGERBLUE
@@ -319,20 +334,30 @@ class BaseProp<IN, OUT>(
 
 
     private companion object {
-        var grabbedProp: BaseProp<*, *>? = null
-        var grabbedPropParent: BaseGraphNode? = null
-        var targetProp: BaseProp<*, *>? = null
+        var grabbedProp: BaseProp<*>? = null
+        var targetProp: BaseProp<*>? = null
         var targetPropParent: BaseGraphNode? = null
         var activeLine: PropLine? = null
         var activeDot: Node? = null
 
         fun clearCompanion() {
             grabbedProp = null
-            grabbedPropParent = null
             targetProp = null
             targetPropParent = null
             activeLine = null
             activeDot = null
         }
     }
+
+    enum class types {
+
+        ANY,
+        FLOAT,
+        INTEGER,
+        STRING,
+        IMAGE
+
+    }
+
 }
+

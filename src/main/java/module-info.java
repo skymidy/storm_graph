@@ -4,6 +4,7 @@ module com.example.stormpr {
     requires kotlin.stdlib;
 
     requires org.kordamp.ikonli.javafx;
+    requires opencv;
 
     opens com.example.stormpr to javafx.fxml;
     exports com.example.stormpr;

@@ -40,6 +40,9 @@ javafx {
 }
 
 dependencies {
+
+    implementation files('C:\\Users\\mrend\\opencv\\build\\java\\opencv-460.jar')
+//    implementation group: 'org.bytedeco', name: 'javacv-platform', version: '1.5.8'
     implementation('org.kordamp.ikonli:ikonli-javafx:12.2.0')
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
@@ -61,3 +64,5 @@ jlink {
 jlinkZip {
     group = 'distribution'
 }
+
+applicationDefaultJvmArgs = ["-Djava.library.path=C:/Users/mrend/opencv/build/java/x64"]
