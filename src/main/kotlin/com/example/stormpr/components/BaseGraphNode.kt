@@ -1,10 +1,9 @@
 package com.example.stormpr.components
 
+import com.example.stormpr.util.DragContext
 import javafx.geometry.Insets
-import javafx.scene.control.CheckBox
 import javafx.scene.control.Label
 import javafx.scene.input.MouseEvent
-import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javafx.scene.paint.Paint
 import javafx.scene.text.Font
@@ -43,18 +42,23 @@ class BaseGraphNode(nodeName: String) : VBox() {
         //body setup
         nodeBody = VBox()
         nodeBody.spacing = 5.0
-        nodeBody.padding = Insets(6.0, .0, 6.0, 6.0)
+        nodeBody.padding = Insets(6.0, .0, 6.0, .0)
 
         //temp porps setup
-        val checkBox = CheckBox("Check box")
-        val hBox = HBox()
-        hBox.children.add(checkBox)
+        val prop1 = BaseProp<Number,Number>(true,true,this) {
+            it
+        }
+        val prop2 = BaseProp<Number,Number>(true,false,this) {
+            it
+        }
+        val prop3 = BaseProp<Number,Number>(false,true,this) {
+            it
+        }
+        val prop4 = BaseProp<Number,Number>(false,false,this) {
+            it
+        }
 
-        val checkBox_ = CheckBox("Check box")
-        val hBox_ = HBox()
-        hBox_.children.add(checkBox_)
-
-        nodeBody.children.addAll(hBox, hBox_)
+        nodeBody.children.addAll(prop1,prop2,prop3,prop4)
 
 
         //setup draggable
@@ -63,7 +67,13 @@ class BaseGraphNode(nodeName: String) : VBox() {
         children.addAll(nodeHeader, nodeBody)
     }
 
-    fun draggableFiltersSetUp() {
+    private fun onNodeTranslate(){
+        nodeBody.children.forEach { node ->
+            (node as BaseProp<*,*>).updateLines()
+        }
+    }
+
+    private fun draggableFiltersSetUp() {
 
         val dragContext = DragContext()
 
@@ -89,13 +99,7 @@ class BaseGraphNode(nodeName: String) : VBox() {
             if (newTranslateY >= 0) {
                 translateY = newTranslateY
             }
+            onNodeTranslate()
         }
-    }
-
-    private class DragContext {
-        var mouseAnchorX = 0.0
-        var mouseAnchorY = 0.0
-        var initialTranslateX = 0.0
-        var initialTranslateY = 0.0
     }
 }
