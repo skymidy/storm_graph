@@ -1,5 +1,6 @@
-package com.example.stormpr.components
+package com.example.stormpr.components.nodes
 
+import com.example.stormpr.components.props.ImageProp
 import com.example.stormpr.util.matToImage
 import javafx.geometry.Point2D
 import javafx.geometry.Rectangle2D
@@ -9,16 +10,17 @@ import java.io.File
 import kotlin.math.floor
 
 
-class SimpleImageNode(imageFile: File, position: Point2D) :
+class SimpleImageNode(position: Point2D, imageFile: File? = null) :
     BaseGraphNode("Image", position) {
     private val imageView: ImageView = ImageView()
-    private var mainProp: ImageProp = ImageProp(this, hasIn = false, hasOut = true)
+    private var mainProp: ImageProp = ImageProp(hasIn = false, hasOut = true)
 
     init {
         //porps init
 
         initPropsListeners()
-        mainProp.setFile(imageFile)
+        if(imageFile !=null)
+            mainProp.setFile(imageFile)
         addProp(mainProp)
 
         //node init
@@ -27,10 +29,6 @@ class SimpleImageNode(imageFile: File, position: Point2D) :
         imageView.isPreserveRatio = false
         imageView.styleClass += "node-image-view"
         nodeHeader.children.add(imageView)
-    }
-
-    override fun update() {
-        super.update()
     }
 
     override fun initPropsListeners() {

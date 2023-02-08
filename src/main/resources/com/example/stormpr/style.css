@@ -1,16 +1,12 @@
 .menu-bar{
-    -fx-background-color: #294a7a;
+    -fx-background-color: ffa500;
 }
 .menu-button {
     -fx-background-color: rgba(0,0,0,0.2);
     -fx-text-fill: white;
 }
-.menu-button:pressed{
-    -fx-background-color: rgba(0,0,0,0.4);
-}
-
 .node-canvas {
-    -fx-background-color: black;
+    -fx-background-color: #676e73;
 }
 .node-graph {
     -fx-background-color: white;
@@ -23,7 +19,7 @@
 }
 .node-button {
     -fx-background-color: rgba(0,0,0,0.2);
-    -fx-text-fill: white;
+    -fx-text-fill: black;
     -fx-cursor: pointer;
 }
 .node-button:pressed{

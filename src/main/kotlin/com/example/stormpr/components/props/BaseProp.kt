@@ -1,4 +1,4 @@
-package com.example.stormpr.components
+package com.example.stormpr.components.props
 
 import com.example.stormpr.util.localToScenePoint
 import javafx.beans.property.Property
@@ -7,6 +7,7 @@ import javafx.geometry.Point2D
 import javafx.geometry.Pos
 import javafx.scene.Group
 import javafx.scene.Node
+import javafx.scene.control.Label
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseDragEvent
 import javafx.scene.input.MouseEvent
@@ -16,16 +17,17 @@ import javafx.scene.paint.Paint
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Line
 import javafx.scene.shape.Polygon
+import javafx.scene.text.Font
+import javafx.scene.text.FontWeight
 
 
 abstract class BaseProp<TYPE>(
-    val hasIn: Boolean, val hasOut: Boolean, parentNode: BaseGraphNode) : HBox() {
+    val hasIn: Boolean, val hasOut: Boolean, name: String? = null
+) : HBox() {
 
     protected abstract val type: types
 
     protected abstract val value: Property<TYPE>
-
-    private var parent: BaseGraphNode = parentNode
 
     private var inputLine: PropLine? = null
     private var outputLines: MutableList<PropLine> = mutableListOf()
@@ -34,6 +36,7 @@ abstract class BaseProp<TYPE>(
     protected var outDot: Polygon = Polygon()
 
     protected val body = HBox()
+    protected val label = Label(name)
 
     init {
         //root setup
@@ -74,6 +77,7 @@ abstract class BaseProp<TYPE>(
         else initOutput()
 
         //body setup
+
         body.minWidth = USE_COMPUTED_SIZE
         body.prefWidth = 400.0
         body.maxWidth = USE_COMPUTED_SIZE
@@ -82,7 +86,13 @@ abstract class BaseProp<TYPE>(
         body.prefHeight = 20.0
         body.maxHeight = USE_COMPUTED_SIZE
 
-        body.alignment = Pos.CENTER_LEFT
+        body.alignment = Pos.CENTER_RIGHT
+        body.spacing = 3.0
+
+        if(name != null) {
+            label.font = Font.font("System", FontWeight.NORMAL, 14.0)
+            body.children.add(label)
+        }
 
         children.addAll(inDot, body, outDot)
     }
@@ -212,6 +222,7 @@ abstract class BaseProp<TYPE>(
             activeLine?.initEventHandler()
             value.bind(targetProp?.value as ObservableValue<out Nothing>)
             inputLine = activeLine
+            body.children.last().isVisible = false
             targetProp?.outputLines?.add(activeLine!!)
 
             //clean up companion
@@ -251,6 +262,8 @@ abstract class BaseProp<TYPE>(
             activeLine?.initEventHandler()
             targetProp?.value?.bind(value as ObservableValue<out Nothing>)
             targetProp?.inputLine = activeLine
+            if(targetProp?.body?.children?.count()!! > 1)
+                targetProp?.body?.children?.last()?.isVisible = false
             outputLines.add(activeLine!!)
 
             //clean up companion
@@ -264,9 +277,20 @@ abstract class BaseProp<TYPE>(
         outputLines.remove(line)
     }
 
-    private fun abortIn() {
+    fun abortAll(){
+        if (outputLines.isNotEmpty()) {
+            var lenght = outputLines.count()
+            while (lenght > 0){
+                outputLines[--lenght].abortConnection()
+            }
+        }
+        abortIn()
+    }
+
+    protected open fun abortIn() {
         inputLine = null
-        println( value.isBound)
+        if(body.children.count()!! > 1)
+            body.children.last().isVisible = true
         value.unbind()
     }
 
@@ -336,7 +360,7 @@ abstract class BaseProp<TYPE>(
     private companion object {
         var grabbedProp: BaseProp<*>? = null
         var targetProp: BaseProp<*>? = null
-        var targetPropParent: BaseGraphNode? = null
+        var targetPropParent: Node? = null
         var activeLine: PropLine? = null
         var activeDot: Node? = null
 
@@ -352,7 +376,7 @@ abstract class BaseProp<TYPE>(
     enum class types {
 
         ANY,
-        FLOAT,
+        DOUBLE,
         INTEGER,
         STRING,
         IMAGE

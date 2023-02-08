@@ -1,29 +1,32 @@
-package com.example.stormpr.components
+package com.example.stormpr.components.props
 
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.control.Button
 import javafx.scene.input.MouseEvent
 import javafx.stage.FileChooser
+import org.opencv.core.CvType
 import org.opencv.core.Mat
+import org.opencv.core.Scalar
+import org.opencv.core.Size
 import org.opencv.imgcodecs.Imgcodecs
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 
 
-
-
-
-class ImageProp(parent: BaseGraphNode, hasIn: Boolean, hasOut: Boolean) : BaseProp<Mat>(hasIn, hasOut, parent) {
+class ImageProp(hasIn: Boolean, hasOut: Boolean, name:String = "src:") : BaseProp<Mat>(hasIn, hasOut, name) {
     override val type: types = types.IMAGE
-    override val value: Property<Mat> = SimpleObjectProperty()
+    override val value: Property<Mat> = SimpleObjectProperty(Mat.eye(220,100, 0xFFFF0000.toInt()))
 
     val button:Button = Button("...")
 
     init {
         button.styleClass += "node-button"
-        button.prefWidth = 200.0
-        button.minWidth = 200.0
-        button.maxWidth = 200.0
+        button.prefWidth = 125.0
+        button.minWidth = 125.0
+        button.maxWidth = 125.0
 
         val fileChooser = FileChooser()
         fileChooser.title = "View Pictures"
@@ -51,11 +54,20 @@ class ImageProp(parent: BaseGraphNode, hasIn: Boolean, hasOut: Boolean) : BasePr
         body.children.add(button)
     }
     fun setFile(file:File){
-        if(file.extension.matches("(?i)jpeg|jpg|png|bmp".toRegex())) {
-            value.value = Imgcodecs.imread(file.path)
-            button.text = file.name
+        var image = Imgcodecs.imread(file.path)
+        if(image.empty()){
+            //file name error
+            val path = Files.copy(Path.of(file.path), Path.of(file.parent+"temp"), StandardCopyOption.REPLACE_EXISTING)
+            image = Imgcodecs.imread(path.toString())
+            Files.delete(path)
         }
+        value.value = image
+        button.text = file.name
+    }
 
-
+    override fun abortIn() {
+        super.abortIn()
+        value.value = Mat(220, 100, CvType.CV_8UC1, Scalar(0.0, 0.0, 255.0))
+        button.text = "choose file"
     }
 }
